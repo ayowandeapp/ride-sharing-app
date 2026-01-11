@@ -73,7 +73,7 @@ const credentials = reactive({
     phone: null,
 })
 
-const waitingOnVerification = ref(true);
+const waitingOnVerification = ref(false);
 
 onMounted(() => {
     if(localStorage.getItem('token')){

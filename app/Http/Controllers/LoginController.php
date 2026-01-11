@@ -17,7 +17,8 @@ class LoginController extends Controller
 
         //find or create user model
         $user = User::firstOrCreate([
-            'phone' => $request->phone
+            'phone' => $request->phone,
+            // 'login_code' => '888888'
         ]);
 
         if (!$user) {
