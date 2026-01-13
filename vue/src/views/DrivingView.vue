@@ -100,7 +100,7 @@ const handlePassengerPickedUp = () =>{
 const handleCompleteTrip = () =>{
     http().post(`/api/trip/${trip.id}/end`, )
         .then(res => {
-            title.value = 'Trip Completed....'
+            title.value = 'Trip Completed....Please wait to confirm payment'
             
             trip.$patch(res.data)
 

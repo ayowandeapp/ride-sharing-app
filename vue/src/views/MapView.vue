@@ -14,6 +14,10 @@
                         >
                         </GMapMap>
                     </div>
+                    <TripSummary :transaction="trip.transaction" />
+
+
+
                     <div class="mt-2">
                         <p class="text-xl">
                             Going to <strong>{{ location.destination.name }}</strong>
@@ -34,6 +38,7 @@
 </template>
 
 <script setup>
+import TripSummary from '@/components/TripSummary.vue'
 import http from '@/helpers/http'
 import { useDirections } from '@/helpers/mapPathOnMap'
 import { useLocationStore } from '@/stores/location'
@@ -53,7 +58,8 @@ const handleConfirmTrip = () => {
     http().post('/api/trip', {
         origin: location.current.geometry,
         destination: location.destination.geometry,
-        destination_name: location.destination.name
+        destination_name: location.destination.name,
+        total_cost: trip.transaction.total_cost
     })
     .then(res => {
         trip.$patch(res.data)
@@ -87,5 +93,8 @@ onMounted(async () => {
         origin: location.current,
         destination: location.destination,
     })
+
+    //calculate trip cost
+    trip.getTripCost()
 })
 </script>

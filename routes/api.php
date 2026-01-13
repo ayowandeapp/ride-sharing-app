@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TripController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +26,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/trip/{trip}/end', [TripController::class, 'end']);
     Route::post('/trip/{trip}/location', [TripController::class, 'location']);
 
-
+    Route::get('/trip/{trip}/checkout', [TransactionController::class, 'checkout'])->name('checkout');
 
 });
 
+
+Route::get('/checkout/success', [TransactionController::class, 'success'])->name('checkout-success');
+
+Route::get('/checkout/cancel', [TransactionController::class, 'cancel'])->name('checkout-cancel');

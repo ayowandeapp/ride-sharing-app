@@ -18,7 +18,7 @@ class TripController extends Controller
             'origin' => 'required|',
             'destination' => 'required|',
             'destination_name' => 'required|',
-
+            'total_cost' => 'required'
         ]);
 
         $trip = $request->user()->trips()->create($request->only([
@@ -26,6 +26,11 @@ class TripController extends Controller
             'destination',
             'destination_name'
         ]));
+
+        //you may recalculate cost 
+        $trip->transaction()->create($request->only(['total_cost']));
+
+        $trip->load('transaction');
 
         TripCreated::dispatch($trip, $request->user());
 
@@ -58,7 +63,7 @@ class TripController extends Controller
             'driver_location' => $request->driver_location
         ]);
 
-        $trip->load('driver.user');
+        $trip->load(['driver.user', 'transaction']);
 
         TripAccepted::dispatch($trip, $trip->user);
 
@@ -72,7 +77,7 @@ class TripController extends Controller
             'is_started' => true,
         ]);
 
-        $trip->load('driver.user');
+        $trip->load(['driver.user', 'transaction']);
 
         TripStarted::dispatch($trip, $trip->user);
 
@@ -85,7 +90,7 @@ class TripController extends Controller
             'is_complete' => true,
         ]);
 
-        $trip->load('driver.user');
+        $trip->load(['driver.user', 'transaction']);
 
         TripEnded::dispatch($trip, $trip->user);
 
@@ -102,7 +107,7 @@ class TripController extends Controller
             'driver_location' => $request->driver_location
         ]);
 
-        $trip->load('driver.user');
+        $trip->load(['driver.user', 'transaction']);
 
         TripLocationUpdated::dispatch($trip, $trip->user);
 

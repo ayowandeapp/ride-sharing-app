@@ -38,6 +38,40 @@ export const useTripStore = defineStore('trip', () => {
       }
     });
 
+    const transaction = reactive({
+      id: null,
+      total_cost: null,
+      status: null
+    })
+
+    
+  const getTripCost = () => {
+    const distanceMeters = 12450;
+    const durationSeconds = 780 //780s
+    const pricing = {
+      baseFare: 500,          // ₦500
+      costPerKm: 150,         // ₦150 per km
+      costPerMinute: 30,      // ₦30 per minute
+      minimumFare: 1000, 
+    };
+    
+    const distanceKm = distanceMeters / 1000
+    const durationMinutes = durationSeconds / 60
+
+    let cost =
+      pricing.baseFare +
+      distanceKm * pricing.costPerKm +
+      durationMinutes * pricing.costPerMinute
+
+    // enforce minimum fare
+    cost = Math.max(cost, pricing.minimumFare)
+
+    console.log('cost', cost)
+
+    transaction.total_cost = cost
+  }
+
+
     const reset= () => {
       id.value = null,
       user_id.value = null,
@@ -67,7 +101,13 @@ export const useTripStore = defineStore('trip', () => {
           name: null
         }
       })
+      
+      Object.assign(transaction, {
+        id:null,
+        total_cost: null,
+        status: null
+      })
     }
   
-  return { id, user_id, origin, destination, driver_location, destination_name, is_complete, is_started, driver, reset }
+  return { id, user_id, origin, destination, driver_location, destination_name, is_complete, is_started, driver, reset, transaction, getTripCost }
 })

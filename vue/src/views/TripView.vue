@@ -14,12 +14,23 @@
                 <div class="bg-gray-50 px-4 py-3 text-right sm:px-6">
                     <span> {{ message }} </span>
                 </div>
+
+                <div v-if="trip.is_complete && trip.transaction.status == 'PENDING'" class="bg-gray-50 px-4 py-3 text-right sm:px-6">            
+                    <TripPayment :trip="trip" :initialLoading="initialLoading" />
+                </div>
+                
+                <div v-if="showSuccess && trip.is_complete && trip.transaction.status == 'complete'" class="bg-gray-50 px-4 py-3 text-right sm:px-6">
+                <h3>Payment Successful! 🎉</h3>
+                <p>Thank you for your payment of <strong>${{ trip.transaction.amount_paid }}</strong></p>
+                </div>
+
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
+import TripPayment from '@/components/TripPayment.vue'
 import echo from '@/helpers/echo'
 import { useLocationStore } from '@/stores/location'
 import { useTripStore } from '@/stores/trip'
@@ -51,6 +62,8 @@ const driverIcon = {
 
 const title= ref('Waiting on a driver...')
 const message= ref('when a driver accepts the trip, their info will appear here.')
+const initialLoading= ref(false)
+const showSuccess= ref(false)
 
 //adject the bound to fit the origin and driver
 const updateMapBounds = () => {
@@ -96,7 +109,18 @@ onMounted(async () => {
             trip.$patch(e.trip)
 
             title.value = "you have arrived!"
-            message.value = `Hope you enjoyed your ride iwth ${e.trip.driver.user.name}`
+            message.value = `Hope you enjoyed your ride with ${e.trip.driver.user.name}`
+        })
+        .listen('TripPaymentUpdated', e => {
+            console.log('TripPaymentUpdated', e);
+            trip.$patch(e.trip)
+
+            title.value = `Trip payment ${e.trip.transaction.status}!`
+            // message.value = `Hope you enjoyed your ride iwth ${e.trip.driver.user.name}`
+            
+            initialLoading.value = false
+
+            showSuccess.value = true
 
             setTimeout(() => {
                 trip.reset()
