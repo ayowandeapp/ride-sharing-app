@@ -40,4 +40,9 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
+    'paystack' => [
+        'key' => env('PAYSTACK_KEY'),
+        'secret' => env('PAYSTACK_SECRET'),
+        'payment_url' => env('PAYSTACK_PAYMENT_URL'),
+    ],
 ];
