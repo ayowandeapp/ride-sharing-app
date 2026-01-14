@@ -1,6 +1,6 @@
 # 🚖 RideSharing App - Laravel + Vue.js
 
-A real-time ride-sharing application built with Laravel backend and Vue.js frontend, featuring WebSocket connections, live GPS tracking, and real-time notifications.
+A real-time ride-sharing application built with Laravel backend and Vue.js frontend, featuring WebSocket connections, live GPS tracking, payment system and real-time notifications.
 
 ## 📋 Table of Contents
 - [Features](#features)
@@ -49,6 +49,8 @@ A real-time ride-sharing application built with Laravel backend and Vue.js front
 
 ### Additional Services
 - **Google Maps Platform** - Maps, Routes, Places
+- **Cashier(Stripe) Platform** - one-time payment,...
+- **Paystack Platform** - one-time payment, webhook...
 
 ## 📋 Prerequisites
 
@@ -57,6 +59,8 @@ Before installation, ensure you have:
 - Composer
 - Node.js 16+ and npm/yarn
 - Google Maps API key
+- Stripe API key
+- Paystack API key
 
 ## 🚀 Installation
 
