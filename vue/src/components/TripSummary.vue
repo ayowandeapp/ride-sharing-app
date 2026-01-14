@@ -1,6 +1,6 @@
 <div class="bg-white px-4 py-5 sm:p-6"></div><template>
     
-    <div class="max-w-sm mx-auto mt-6 rounded-2xl bg-white shadow-lg p-5">
+    <div class="max-w-sm mx-auto mt-6 p-5">
         <h2 class="text-lg font-semibold mb-4">Trip Summary</h2>
 
         <div class="space-y-3 text-sm">

@@ -9,6 +9,7 @@
         </button>
     </div>
 
+
 </template>
 
 <script setup>
@@ -18,7 +19,6 @@ import { ref } from 'vue'
 const props = defineProps(['trip', 'initialLoading'])
 
 const isLoading = ref(props.initialLoading ?? false)
-const checkoutUrl = ref(null)
 
 
 const initiateCheckout = async () => {

@@ -5,25 +5,65 @@
             <div class="overflow-hidden shadow sm:rounded-md max-w-sm mx-auto text-left">
                 <div class="bg-white px-4 py-5 sm:p-6">
                     <div>
-                        <GMapMap ref="gMap" :zoom="14" :center="location.current.geometry" style="width: 100%; height: 256px">
+                        <GMapMap
+                            ref="gMap"
+                            :zoom="14"
+                            :center="location.current.geometry"
+                            style="width: 100%; height: 256px"
+                        >
                             <GMapMarker :icon="currentIcon" :position="location.current.geometry" />
-                             <GMapMarker v-if="trip.driver_location" :icon="driverIcon" :position="trip.driver_location" />
+                            <GMapMarker
+                                v-if="trip.driver_location"
+                                :icon="driverIcon"
+                                :position="trip.driver_location"
+                            />
                         </GMapMap>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 text-right sm:px-6">
                     <span> {{ message }} </span>
+
+                    <div v-if="trip.transaction">
+                        <TripSummary :transaction="trip.transaction" />
+                    </div>
                 </div>
 
-                <div v-if="trip.is_complete && trip.transaction.status == 'PENDING'" class="bg-gray-50 px-4 py-3 text-right sm:px-6">            
-                    <TripPayment :trip="trip" :initialLoading="initialLoading" />
-                </div>
-                
-                <div v-if="showSuccess && trip.is_complete && trip.transaction.status == 'complete'" class="bg-gray-50 px-4 py-3 text-right sm:px-6">
-                <h3>Payment Successful! 🎉</h3>
-                <p>Thank you for your payment of <strong>${{ trip.transaction.amount_paid }}</strong></p>
+                <div
+                    v-if="trip.is_complete && trip.transaction.status == 'PENDING'"
+                    class="bg-gray-50 px-4 py-3 text-right sm:px-6"
+                >
+                    <div>
+                        <select v-model="selectedPaymentMethod"
+                            class="block w-full px-4 py-2 pr-8 text-sm leading-tight text-gray-700 bg-white border border-gray-400 rounded appearance-none focus:outline-none focus:bg-white focus:border-blue-500"
+                        >
+                            <option value="stripe">Stripe</option>
+                            <option value="paystack">Paystack</option>
+                        </select>
+                    </div>
+                    <TripPayment
+                        :trip="trip"
+                        :initialLoading="initialLoading"
+                        v-if="selectedPaymentMethod == 'stripe'"
+                    />
+
+                    <TripPaystackPayment :trip="trip" v-if="selectedPaymentMethod == 'paystack'" />
                 </div>
 
+                <div
+                    v-if="
+                        showSuccess &&
+                        trip.is_complete &&
+                        (trip.transaction.status == 'complete' ||
+                            trip.transaction.status == 'success')
+                    "
+                    class="bg-gray-50 px-4 py-3 text-right sm:px-6"
+                >
+                    <h3>Payment Successful! 🎉</h3>
+                    <p>
+                        Thank you for your payment of
+                        <strong>${{ trip.transaction.amount_paid }}</strong>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -31,6 +71,8 @@
 
 <script setup>
 import TripPayment from '@/components/TripPayment.vue'
+import TripPaystackPayment from '@/components/TripPaystackPayment.vue'
+import TripSummary from '@/components/TripSummary.vue'
 import echo from '@/helpers/echo'
 import { useLocationStore } from '@/stores/location'
 import { useTripStore } from '@/stores/trip'
@@ -60,10 +102,11 @@ const driverIcon = {
     },
 }
 
-const title= ref('Waiting on a driver...')
-const message= ref('when a driver accepts the trip, their info will appear here.')
-const initialLoading= ref(false)
-const showSuccess= ref(false)
+const title = ref('Waiting on a driver...')
+const message = ref('when a driver accepts the trip, their info will appear here.')
+const initialLoading = ref(false)
+const showSuccess = ref(false)
+const selectedPaymentMethod = ref('stripe')
 
 //adject the bound to fit the origin and driver
 const updateMapBounds = () => {
@@ -77,47 +120,46 @@ const updateMapBounds = () => {
     gMapObject.value.fitBounds(latLngBounds)
 }
 onMounted(async () => {
-    
     gMap.value.$mapPromise.then((mapObject) => {
         gMapObject.value = mapObject
     })
 
     echo.channel(`passenger_${trip.user_id}`)
-        .listen('TripAccepted', e => {
-            console.log('TripAccepted', e);
+        .listen('TripAccepted', (e) => {
+            console.log('TripAccepted', e)
             trip.$patch(e.trip)
-            title.value = 'A driver is on the way:';
+            title.value = 'A driver is on the way:'
             message.value = `${e.trip.driver?.user.name} is coming in a ${e.trip.driver.year} ${e.trip.driver.color} ${e.trip.driver.make} ${e.trip.driver.model} with a license plate ${e.trip.driver.license_plate}`
-            
-        }).listen('TripLocationUpdated', e => {
+        })
+        .listen('TripLocationUpdated', (e) => {
             trip.$patch(e.trip)
 
             setTimeout(updateMapBounds, 1000)
         })
-        .listen('TripStarted', e => {
+        .listen('TripStarted', (e) => {
             trip.$patch(e.trip)
             location.$patch({
                 current: {
-                    geometry: e.trip.destination
-                }
+                    geometry: e.trip.destination,
+                },
             })
 
-            title.value = "You are on your way!"
+            title.value = 'You are on your way!'
             message.value = `you are headed to ${e.trip.destination_name}`
         })
-        .listen('TripEnded', e => {
+        .listen('TripEnded', (e) => {
             trip.$patch(e.trip)
 
-            title.value = "you have arrived!"
+            title.value = 'you have arrived!'
             message.value = `Hope you enjoyed your ride with ${e.trip.driver.user.name}`
         })
-        .listen('TripPaymentUpdated', e => {
-            console.log('TripPaymentUpdated', e);
+        .listen('TripPaymentUpdated', (e) => {
+            console.log('TripPaymentUpdated', e)
             trip.$patch(e.trip)
 
             title.value = `Trip payment ${e.trip.transaction.status}!`
             // message.value = `Hope you enjoyed your ride iwth ${e.trip.driver.user.name}`
-            
+
             initialLoading.value = false
 
             showSuccess.value = true
@@ -125,13 +167,12 @@ onMounted(async () => {
             setTimeout(() => {
                 trip.reset()
                 location.reset()
-                router.push({name: 'landing'})
+                router.push({ name: 'landing' })
             }, 10000)
         })
-    
+
     echo.connector.pusher.connection.bind('connected', () => {
         console.log('✅ Pusher connected!')
     })
-
 })
 </script>
