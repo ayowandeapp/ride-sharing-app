@@ -57,7 +57,7 @@ class PaystackController extends Controller
 
             if ($eventType == 'charge.success') {
 
-                $tripId = $resData['data']['metadata']['trip_id'] ?? null;
+                $tripId = $resData['metadata']['trip_id'] ?? null;
 
                 $trip = Trip::findOrFail($tripId);
 
@@ -95,7 +95,7 @@ class PaystackController extends Controller
             $trip = Trip::findOrFail($tripId);
 
 
-            $this->updatePaymentRecord($resDecode, $trip);
+            $this->updatePaymentRecord($resDecode['data'], $trip);
 
             $trip->load(['driver.user', 'transaction']);
 
@@ -104,15 +104,15 @@ class PaystackController extends Controller
         return response()->json($res);
     }
 
-    private function updatePaymentRecord($resDecode, Trip $trip)
+    private function updatePaymentRecord($data, Trip $trip)
     {
-        $data = $resDecode['data'];
+        // $data = $resDecode['data'];
         $trip->transaction()->update([
             'amount_paid' => $data['amount'] / 100,
             'currency' => strtoupper($data['currency']),
             'payment_method' => $data['channel'] ?? 'card',
             'status' => $data['status'],
-            'stripe_response' => json_encode($resDecode)
+            'stripe_response' => json_encode($data)
         ]);
     }
 
